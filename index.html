@@ -5,14 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Galeria de Mídia</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-        h1 { color: #333; }
-        .menu { margin-bottom: 20px; }
-        .menu button { padding: 10px 15px; margin: 5px; cursor: pointer; font-size: 16px; }
-        .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
-        .gallery-item { text-align: center; }
-        .gallery-item img, .gallery-item video, .gallery-item audio { width: 300px; height: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
-        .hidden { display: none; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #000;
+            color: #fff;
+        }
+        h1 {
+            color: #fff;
+        }
+        .menu {
+            margin-bottom: 20px;
+        }
+        .menu button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .gallery-item {
+            text-align: center;
+            max-width: 300px;
+        }
+        .gallery-item img,
+        .gallery-item video,
+        .gallery-item gif {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -20,144 +56,54 @@
     <h1>📂 Selecione uma Opção</h1>
 
     <div class="menu">
-        <button onclick="setMediaType('image')">📸 Foto</button>
-        <button onclick="setMediaType('video')">🎥 Vídeo</button>
-        <button onclick="setMediaType('gif')">🖼️ GIF</button>
-        <button onclick="setMediaType('audio')">🎶 Áudio</button>
-        <button onclick="setMediaType('playlist')">📺 Playlist</button>
+        <button onclick="showGallery('photos')">📸 Fotos</button>
+        <button onclick="showGallery('videos')">🎥 Vídeos</button>
+        <button onclick="showGallery('gifs')">🖼️ GIFs</button>
     </div>
 
-    <div class="upload-container">
-        <input type="text" id="titleInput" placeholder="Digite um título..." required>
-        <input type="file" id="fileInput" accept="image/*,video/*,audio/*">
-        <button onclick="addMedia()">Adicionar Mídia</button>
-    </div>
+    <h2>📌 Galeria de Fotos</h2>
+    <div class="gallery hidden" id="photosGallery"></div>
 
-    <h2>📌 Galeria</h2>
-    <div class="gallery" id="gallery"></div>
+    <h2>📌 Galeria de Vídeos</h2>
+    <div class="gallery hidden" id="videosGallery"></div>
 
-    <h2>🎞️ Playlist</h2>
-    <div class="gallery" id="playlist">
-        <button class="hidden" id="playAllButton" onclick="playPlaylist()">▶️ Reproduzir Playlist</button>
-    </div>
+    <h2>📌 Galeria de GIFs</h2>
+    <div class="gallery hidden" id="gifsGallery"></div>
 
     <script>
-        let selectedType = "image";
+        // Função para exibir a galeria escolhida
+        function showGallery(category) {
+            // Ocultar todas as galerias
+            document.getElementById("photosGallery").classList.add("hidden");
+            document.getElementById("videosGallery").classList.add("hidden");
+            document.getElementById("gifsGallery").classList.add("hidden");
 
-        function setMediaType(type) {
-            selectedType = type;
-            document.getElementById("fileInput").value = "";
-            document.getElementById("titleInput").value = "";
+            // Exibir a galeria correspondente à categoria selecionada
+            document.getElementById(`${category}Gallery`).classList.remove("hidden");
+
+            // Carregar os arquivos da pasta correspondente
+            loadMedia(category);
         }
 
-        function addMedia() {
-            const fileInput = document.getElementById('fileInput');
-            const titleInput = document.getElementById('titleInput');
-
-            if (!titleInput.value.trim()) {
-                alert("Por favor, insira um título antes de adicionar.");
-                return;
-            }
-
-            if (fileInput.files.length === 0) {
-                alert("Selecione um arquivo para adicionar!");
-                return;
-            }
-
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-
-            reader.onload = function(event) {
-                const url = event.target.result;
-                const mediaData = {
-                    title: titleInput.value,
-                    url: url,
-                    type: selectedType
-                };
-
-                saveMedia(mediaData);
-                renderMedia();
+        function loadMedia(category) {
+            // Aqui você coloca o link direto para os arquivos nas pastas do GitHub
+            // As pastas 'fotos', 'videos' e 'gifs' serão usadas para os arquivos
+            const mediaFolder = {
+                photos: "https://github.com/SEU-USUARIO/SEU-REPOSITORIO/tree/main/fotos",
+                videos: "https://github.com/SEU-USUARIO/SEU-REPOSITORIO/tree/main/videos",
+                gifs: "https://github.com/SEU-USUARIO/SEU-REPOSITORIO/tree/main/gifs"
             };
 
-            reader.readAsDataURL(file);
+            // Definir o caminho para as pastas de mídia
+            const folderURL = mediaFolder[category];
+
+            // Mostrar um link para a pasta, informando ao usuário que ele precisa visitar o repositório
+            const gallery = document.getElementById(`${category}Gallery`);
+            gallery.innerHTML = `<p>Visite a pasta do GitHub para acessar as ${category}: <a href="${folderURL}" target="_blank">${category.charAt(0).toUpperCase() + category.slice(1)}</a></p>`;
         }
 
-        function saveMedia(mediaData) {
-            let mediaList = JSON.parse(localStorage.getItem("mediaList")) || [];
-            mediaList.push(mediaData);
-            localStorage.setItem("mediaList", JSON.stringify(mediaList));
-        }
-
-        function renderMedia() {
-            const gallery = document.getElementById("gallery");
-            const playlist = document.getElementById("playlist");
-            const playAllButton = document.getElementById("playAllButton");
-
-            gallery.innerHTML = "";
-            playlist.innerHTML = '<button class="hidden" id="playAllButton" onclick="playPlaylist()">▶️ Reproduzir Playlist</button>';
-
-            const mediaList = JSON.parse(localStorage.getItem("mediaList")) || [];
-
-            mediaList.forEach((media) => {
-                const container = document.createElement("div");
-                container.classList.add("gallery-item");
-
-                const title = document.createElement("h3");
-                title.textContent = media.title;
-
-                const link = document.createElement("a");
-                link.href = media.url;
-                link.target = "_blank";
-
-                let mediaElement;
-                if (media.type === "image" || media.type === "gif") {
-                    mediaElement = document.createElement("img");
-                    mediaElement.src = media.url;
-                } else if (media.type === "video") {
-                    mediaElement = document.createElement("video");
-                    mediaElement.src = media.url;
-                    mediaElement.controls = true;
-                } else if (media.type === "audio") {
-                    mediaElement = document.createElement("audio");
-                    mediaElement.src = media.url;
-                    mediaElement.controls = true;
-                } else if (media.type === "playlist") {
-                    mediaElement = document.createElement("video");
-                    mediaElement.src = media.url;
-                    mediaElement.controls = true;
-                }
-
-                link.appendChild(mediaElement);
-                container.appendChild(title);
-                container.appendChild(link);
-
-                if (media.type === "playlist") {
-                    playlist.appendChild(container);
-                    playAllButton.classList.remove("hidden");
-                } else {
-                    gallery.appendChild(container);
-                }
-            });
-        }
-
-        function playPlaylist() {
-            const videos = document.querySelectorAll("#playlist video");
-            let index = 0;
-
-            function playNext() {
-                if (index < videos.length) {
-                    videos[index].play();
-                    videos[index].onended = () => {
-                        index++;
-                        playNext();
-                    };
-                }
-            }
-
-            playNext();
-        }
-
-        document.addEventListener("DOMContentLoaded", renderMedia);
+        // Exibe a galeria de fotos por padrão ao carregar
+        document.addEventListener("DOMContentLoaded", () => showGallery('photos'));
     </script>
 
 </body>
